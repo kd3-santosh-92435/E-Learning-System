@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.elearning.dtos.CourseResponseDTO;
 import com.elearning.dtos.StudentResponseDTO;
+import com.elearning.dtos.UpdateProfileDTO;
 import com.elearning.service.StudentService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -58,4 +60,15 @@ public class StudentController {
                 studentService.getMyCourses()
         );
     }
+    
+    @PutMapping("/profile")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<String> updateProfile(
+           @Valid @RequestBody UpdateProfileDTO dto) {
+
+        studentService.updateProfile(dto);
+        return ResponseEntity.ok("Profile updated successfully");
+    }
+
+    
 }

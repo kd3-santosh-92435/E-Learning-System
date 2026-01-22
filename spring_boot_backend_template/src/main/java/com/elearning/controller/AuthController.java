@@ -8,16 +8,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.elearning.dtos.AdminLoginDTO;
 import com.elearning.dtos.AdminResponseDTO;
+import com.elearning.dtos.ForgotPasswordDTO;
 import com.elearning.dtos.JwtResponseDTO;
 import com.elearning.dtos.LoginRequestDTO;
+import com.elearning.dtos.ResetPasswordDTO;
 import com.elearning.dtos.StudentRegisterDTO;
 import com.elearning.dtos.StudentResponseDTO;
 import com.elearning.entity.Instructor;
 import com.elearning.security.JwtUtil;
 import com.elearning.service.AdminService;
+import com.elearning.service.AuthService;
 import com.elearning.service.InstructorService;
 import com.elearning.service.StudentService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -30,18 +34,20 @@ public class AuthController {
     private final AdminService adminService;
     private final JwtUtil jwtUtil;
 
+    private final AuthService authService;
+
     // ================= STUDENT =================
 
     @PostMapping("/student/register")
     public ResponseEntity<StudentResponseDTO> registerStudent(
-            @RequestBody StudentRegisterDTO dto) {
+            @Valid @RequestBody StudentRegisterDTO dto) {
 
         return ResponseEntity.ok(studentService.register(dto));
     }
 
     @PostMapping("/student/login")
     public ResponseEntity<JwtResponseDTO> studentLogin(
-            @RequestBody LoginRequestDTO dto) {
+           @Valid @RequestBody LoginRequestDTO dto) {
 
         StudentResponseDTO student = studentService.login(dto);
         String token = jwtUtil.generateToken(student.getEmail(), "STUDENT");
@@ -52,14 +58,14 @@ public class AuthController {
 
     @PostMapping("/instructor/register")
     public ResponseEntity<Instructor> registerInstructor(
-            @RequestBody Instructor instructor) {
+           @Valid @RequestBody Instructor instructor) {
 
         return ResponseEntity.ok(instructorService.register(instructor));
     }
 
     @PostMapping("/instructor/login")
     public ResponseEntity<JwtResponseDTO> instructorLogin(
-            @RequestBody LoginRequestDTO dto) {
+          @Valid  @RequestBody LoginRequestDTO dto) {
 
         Instructor instructor = instructorService.login(dto);
         String token = jwtUtil.generateToken(instructor.getEmail(), "INSTRUCTOR");
@@ -70,11 +76,29 @@ public class AuthController {
 
     @PostMapping("/admin/login")
     public ResponseEntity<JwtResponseDTO> adminLogin(
-            @RequestBody AdminLoginDTO dto) {
+          @Valid  @RequestBody AdminLoginDTO dto) {
 
         AdminResponseDTO admin = adminService.login(dto);
         String token = jwtUtil.generateToken(admin.getEmail(), "ADMIN");
         return ResponseEntity.ok(new JwtResponseDTO(token));
     }
+    
+    
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(
+          @Valid  @RequestBody ForgotPasswordDTO dto) {
+
+        authService.forgotPassword(dto);
+        return ResponseEntity.ok("Password reset email sent");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+           @Valid @RequestBody ResetPasswordDTO dto) {
+
+        authService.resetPassword(dto);
+        return ResponseEntity.ok("Password updated successfully");
+    }
+    
 }
 

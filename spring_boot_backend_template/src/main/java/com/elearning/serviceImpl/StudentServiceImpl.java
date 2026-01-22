@@ -1,16 +1,10 @@
 package com.elearning.serviceImpl;
 
-import java.util.List;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import com.elearning.dtos.CourseResponseDTO;
 import com.elearning.dtos.LoginRequestDTO;
 import com.elearning.dtos.StudentRegisterDTO;
 import com.elearning.dtos.StudentResponseDTO;
+import com.elearning.dtos.UpdateProfileDTO;
 import com.elearning.entity.Course;
 import com.elearning.entity.Enrollment;
 import com.elearning.entity.Student;
@@ -18,9 +12,15 @@ import com.elearning.repository.CourseRepository;
 import com.elearning.repository.EnrollmentRepository;
 import com.elearning.repository.StudentRepository;
 import com.elearning.security.JwtUtil;
+import com.elearning.service.EmailService;
 import com.elearning.service.StudentService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +31,11 @@ public class StudentServiceImpl implements StudentService {
     private final EnrollmentRepository enrollmentRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
-    // =============================
+    // ===============================
     // REGISTER
-    // =============================
+    // ===============================
     @Override
     public StudentResponseDTO register(StudentRegisterDTO dto) {
 
@@ -57,9 +58,9 @@ public class StudentServiceImpl implements StudentService {
                 .build();
     }
 
-    // =============================
+    // ===============================
     // LOGIN
-    // =============================
+    // ===============================
     @Override
     public StudentResponseDTO login(LoginRequestDTO dto) {
 
@@ -80,9 +81,9 @@ public class StudentServiceImpl implements StudentService {
                 .build();
     }
 
-    // =============================
-    // PROFILE
-    // =============================
+    // ===============================
+    // GET PROFILE (JWT BASED)
+    // ===============================
     @Override
     public StudentResponseDTO getProfile() {
 
@@ -95,9 +96,9 @@ public class StudentServiceImpl implements StudentService {
                 .build();
     }
 
-    // =============================
-    // ALL COURSES
-    // =============================
+    // ===============================
+    // GET ALL COURSES
+    // ===============================
     @Override
     public List<CourseResponseDTO> getAllCourses() {
 
@@ -108,14 +109,13 @@ public class StudentServiceImpl implements StudentService {
                         .title(course.getTitle())
                         .description(course.getDescription())
                         .price(course.getPrice())
-                        .instructorName(course.getInstructor().getName())
                         .build())
-                .toList();
+                .collect(Collectors.toList());
     }
 
-    // =============================
-    // ENROLL COURSE (JWT BASED)
-    // =============================
+    // ===============================
+    // ENROLL COURSE + EMAIL
+    // ===============================
     @Override
     public String enrollCourse(Long courseId) {
 
@@ -137,18 +137,31 @@ public class StudentServiceImpl implements StudentService {
 
         enrollmentRepository.save(enrollment);
 
+        // ✅ SEND COURSE ENROLLMENT EMAIL
+        try {
+            emailService.sendCourseEnrollmentEmail(
+                    student.getEmail(),
+                    student.getName(),
+                    course.getTitle()
+            );
+        } catch (Exception e) {
+            // Email failure should NOT block enrollment
+            e.printStackTrace();
+        }
+
         return "Course enrolled successfully";
     }
 
-    // =============================
-    // MY COURSES
-    // =============================
+    // ===============================
+    // GET MY COURSES
+    // ===============================
     @Override
     public List<CourseResponseDTO> getMyCourses() {
 
         Student student = getLoggedInStudent();
 
-        return enrollmentRepository.findByStudent_StudentId(student.getStudentId())
+        return enrollmentRepository
+                .findByStudent_StudentId(student.getStudentId())
                 .stream()
                 .map(enrollment -> {
                     Course course = enrollment.getCourse();
@@ -157,27 +170,70 @@ public class StudentServiceImpl implements StudentService {
                             .title(course.getTitle())
                             .description(course.getDescription())
                             .price(course.getPrice())
-                            .instructorName(course.getInstructor().getName())
                             .build();
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
-    // =============================
-    // PRIVATE HELPER
-    // =============================
+    // ===============================
+    // UTILITY: GET LOGGED IN STUDENT
+    // ===============================
     private Student getLoggedInStudent() {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthorized");
-        }
-
-        String email = authentication.getName();
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
 
         return studentRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
     }
+    
+    @Override
+    public void updateProfile(UpdateProfileDTO dto) {
+
+        Student student = getLoggedInStudent();
+
+        // ===============================
+        // UPDATE NAME
+        // ===============================
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            student.setName(dto.getName());
+        }
+
+        // ===============================
+        // UPDATE EMAIL
+        // ===============================
+        if (dto.getEmail() != null &&
+            !dto.getEmail().equals(student.getEmail())) {
+
+            if (studentRepository.findByEmail(dto.getEmail()).isPresent()) {
+                throw new RuntimeException("Email already in use");
+            }
+            student.setEmail(dto.getEmail());
+        }
+
+        // ===============================
+        // CHANGE PASSWORD (OPTIONAL)
+        // ===============================
+        if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
+
+            if (dto.getOldPassword() == null) {
+                throw new RuntimeException("Old password is required");
+            }
+
+            if (!passwordEncoder.matches(
+                    dto.getOldPassword(),
+                    student.getPassword())) {
+                throw new RuntimeException("Old password is incorrect");
+            }
+
+            student.setPassword(
+                    passwordEncoder.encode(dto.getNewPassword())
+            );
+        }
+
+        studentRepository.save(student);
+    }
+
 }

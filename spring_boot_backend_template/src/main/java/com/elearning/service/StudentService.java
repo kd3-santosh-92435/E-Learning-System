@@ -6,6 +6,7 @@ import com.elearning.dtos.CourseResponseDTO;
 import com.elearning.dtos.LoginRequestDTO;
 import com.elearning.dtos.StudentRegisterDTO;
 import com.elearning.dtos.StudentResponseDTO;
+import com.elearning.dtos.UpdateProfileDTO;
 
 public interface StudentService {
 
@@ -20,4 +21,7 @@ public interface StudentService {
     List<CourseResponseDTO> getAllCourses();
     String enrollCourse(Long courseId);
     List<CourseResponseDTO> getMyCourses();
+    
+    void updateProfile(UpdateProfileDTO dto);
+
 }
