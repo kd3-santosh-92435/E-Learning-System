@@ -10,5 +10,7 @@ import com.elearning.entity.Video;
 @Repository
 public interface VideoRepository extends JpaRepository<Video, Long> {
 
-    List<Video> findByCourse_CourseId(Long courseId);
+//    List<Video> findByCourse_CourseId(Long courseId);
+	
+	 List<Video> findByCourse_CourseId(Long courseId);
 }

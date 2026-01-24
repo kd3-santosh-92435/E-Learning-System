@@ -1,77 +1,73 @@
 package com.elearning.config;
 
-import java.util.List;
-
+import com.elearning.security.JwtFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.elearning.security.JwtAuthenticationFilter;
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-            // ENABLE CORS
-            .cors(Customizer.withDefaults())
-
-            // DISABLE CSRF (JWT based)
             .csrf(csrf -> csrf.disable())
 
+            // ✅ THIS IS THE KEY
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
             .authorizeHttpRequests(auth -> auth
-                // AUTH APIs
+
+                // ✅ ALLOW PREFLIGHT
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // ✅ AUTH ENDPOINTS
                 .requestMatchers("/api/auth/**").permitAll()
 
-                // PUBLIC VIDEO ACCESS (if needed)
-                .requestMatchers(HttpMethod.GET, "/videos/**").permitAll()
+                // ✅ ROLE BASED
+                .requestMatchers("/api/instructor/**").hasRole("INSTRUCTOR")
+                .requestMatchers("/api/student/**").hasRole("STUDENT")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                // ANY OTHER REQUEST
                 .anyRequest().authenticated()
             )
 
-            // JWT FILTER
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ===============================
-    // CORS CONFIGURATION
-    // ===============================
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://localhost:5174"
-        ));
-
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
-
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
@@ -85,7 +81,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+            AuthenticationConfiguration configuration
+    ) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 }

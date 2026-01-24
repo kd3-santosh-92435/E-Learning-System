@@ -25,11 +25,15 @@ public class Video {
     private Long videoId;
 
     private String title;
+
     private String videoUrl;
+
     private Integer duration;
 
-    @ManyToOne
-    @JoinColumn(name = "course_id")
+    private String filePath;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
     @CreationTimestamp

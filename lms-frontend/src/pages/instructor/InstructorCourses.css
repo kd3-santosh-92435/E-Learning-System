@@ -1,0 +1,58 @@
+.page-title {
+  margin-bottom: 20px;
+  font-size: 26px;
+}
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.course-card {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+}
+
+.course-card h3 {
+  margin-bottom: 10px;
+}
+
+.price {
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actions button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.actions .edit {
+  background: #00c6ff;
+}
+
+.actions .delete {
+  background: #ff4d4d;
+  color: white;
+}
+
+.actions .video {
+  background: #7fff00;
+}

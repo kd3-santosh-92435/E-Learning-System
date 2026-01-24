@@ -23,5 +23,7 @@ public interface StudentService {
     List<CourseResponseDTO> getMyCourses();
     
     void updateProfile(UpdateProfileDTO dto);
+    
+    Long getLoggedInStudentId();
 
 }

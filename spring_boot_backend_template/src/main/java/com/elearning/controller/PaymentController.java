@@ -1,9 +1,11 @@
 package com.elearning.controller;
 
 import com.elearning.service.PaymentService;
+import com.elearning.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -16,25 +18,26 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping("/create-order")
+    @PostMapping("/create-order/{courseId}")
     public ResponseEntity<Map<String, Object>> createOrder(
-            @RequestParam Long studentId,
-            @RequestParam Long courseId) {
+            @PathVariable Long courseId) {
 
         return ResponseEntity.ok(
-                paymentService.createOrder(studentId, courseId)
+                paymentService.createOrder(courseId)
         );
     }
 
     @PostMapping("/verify")
     public ResponseEntity<String> verifyPayment(
-            @RequestBody Map<String, String> payload) {
+            @RequestParam String razorpayOrderId,
+            @RequestParam String razorpayPaymentId,
+            @RequestParam String razorpaySignature) {
 
         return ResponseEntity.ok(
-                paymentService.verifyPayment(
-                        payload.get("razorpayOrderId"),
-                        payload.get("razorpayPaymentId"),
-                        payload.get("razorpaySignature")
+                paymentService.verifyAndEnroll(
+                        razorpayOrderId,
+                        razorpayPaymentId,
+                        razorpaySignature
                 )
         );
     }

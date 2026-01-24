@@ -1,0 +1,51 @@
+.landing {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: white;
+  text-align: center;
+  padding-top: 60px;
+}
+
+.title {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 50px;
+}
+
+.role-section {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 12px;
+  width: 220px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.card h2 {
+  margin-bottom: 20px;
+}
+
+.card a {
+  display: block;
+  margin: 8px 0;
+  padding: 10px;
+  background: #00b4db;
+  color: black;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.card a:hover {
+  background: #90e0ef;
+}

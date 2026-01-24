@@ -7,6 +7,7 @@ import com.elearning.dtos.CourseResponseDTO;
 import com.elearning.dtos.LoginRequestDTO;
 import com.elearning.dtos.QuizRequestDTO;
 import com.elearning.dtos.QuizResponseDTO;
+import com.elearning.dtos.VideoResponseDTO;
 import com.elearning.entity.Instructor;
 
 public interface InstructorService {
@@ -15,10 +16,15 @@ public interface InstructorService {
 
     Instructor login(LoginRequestDTO dto);
 
-    CourseResponseDTO createCourse(Long instructorId, CourseRequestDTO dto);
+    CourseResponseDTO createCourse(String instructorEmail, CourseRequestDTO dto);
+
+    List<CourseResponseDTO> getCoursesByEmail(String email);
+
+    void deleteCourse(Long courseId, String email);
+
+    CourseResponseDTO updateCourse(Long courseId, CourseRequestDTO dto, String email);
 
     QuizResponseDTO createQuiz(QuizRequestDTO dto);
 
-    List<CourseResponseDTO> getCourses(Long instructorId);
+    List<VideoResponseDTO> getVideosByCourse(Long courseId);
 }
-

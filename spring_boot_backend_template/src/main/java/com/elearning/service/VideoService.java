@@ -1,15 +1,18 @@
 package com.elearning.service;
 
-import com.elearning.entity.CourseVideo;
+import java.util.List;
+
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import com.elearning.dtos.VideoResponseDTO;
+import com.elearning.entity.Video;
 
 public interface VideoService {
 
-    void uploadVideo(Long courseId, MultipartFile file, String title);
+    VideoResponseDTO uploadVideo(Long courseId, String title, MultipartFile file);
 
-    CourseVideo getVideo(Long videoId);
+    List<VideoResponseDTO> getVideosByCourse(Long courseId);
 
-    List<CourseVideo> getVideosByCourse(Long courseId);
+	Video getVideo(Long videoId);
+	void deleteVideo(Long videoId);
 }

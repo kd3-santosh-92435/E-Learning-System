@@ -1,0 +1,161 @@
+/* ============================= */
+/* ===== GLOBAL RESET ===== */
+/* ============================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ============================= */
+/* ===== BODY ===== */
+/* ============================= */
+body {
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #ffffff;
+}
+
+/* ============================= */
+/* ===== CONTAINERS ===== */
+/* ============================= */
+.container-fluid {
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+/* ============================= */
+/* ===== GLASS EFFECT ===== */
+/* ============================= */
+.glass {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+}
+
+/* ============================= */
+/* ===== HEADINGS ===== */
+/* ============================= */
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ============================= */
+/* ===== TEXT ===== */
+/* ============================= */
+.text-light {
+  opacity: 0.8;
+}
+
+/* ============================= */
+/* ===== BUTTONS ===== */
+/* ============================= */
+.btn {
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn-gradient {
+  background: linear-gradient(45deg, #00c6ff, #0072ff);
+  border: none;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.btn-outline-light {
+  border: 2px solid #ffffff;
+  background: transparent;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+}
+
+/* ============================= */
+/* ===== FORMS ===== */
+/* ============================= */
+.form-control {
+  border-radius: 10px;
+  padding: 10px;
+  border: none;
+}
+
+.form-control:focus {
+  outline: none;
+  box-shadow: none;
+  border: 2px solid #00c6ff;
+}
+
+/* ============================= */
+/* ===== CARDS ===== */
+/* ============================= */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-10px);
+}
+
+/* ============================= */
+/* ===== DASHBOARD HEADER ===== */
+/* ============================= */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ============================= */
+/* ===== LINKS ===== */
+/* ============================= */
+a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ============================= */
+/* ===== RESPONSIVE ===== */
+/* ============================= */
+@media (max-width: 768px) {
+  .glass {
+    padding: 1.5rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

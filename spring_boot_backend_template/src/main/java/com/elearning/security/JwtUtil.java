@@ -19,18 +19,43 @@ public class JwtUtil {
 
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
+//    public String generateToken(String username, String role) {
+//        return Jwts.builder()
+//                .setSubject(username)
+//                .claim("role", role)
+//                .setIssuedAt(new Date())
+//                .setExpiration(
+//                        new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)
+//                )
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
+//    }
+    
     public String generateToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
-                .claim("role", role)
+                .claim("role", "ROLE_" + role)
                 .setIssuedAt(new Date())
-                .setExpiration(
-                        new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)
-                )
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    
+    
+
+    public String generateToken(String email, String role, Long id) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", role)
+                .claim("id", id) // ✅ NEW
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }

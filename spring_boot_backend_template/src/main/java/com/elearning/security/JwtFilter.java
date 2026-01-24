@@ -22,6 +22,16 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
 
+    /**
+     * IMPORTANT:
+     * Skip JWT validation for AUTH endpoints
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth/");
+    }
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -30,14 +40,17 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            username = jwtUtil.extractUsername(token);
+        // If no Authorization header → continue
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
+        String token = authHeader.substring(7);
+        String username = jwtUtil.extractUsername(token);
+
+        // Validate only if user not already authenticated
         if (username != null &&
             SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -54,7 +67,8 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
 
                 authentication.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
                 );
 
                 SecurityContextHolder.getContext()

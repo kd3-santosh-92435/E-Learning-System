@@ -1,0 +1,52 @@
+.landing-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landing-container {
+  max-width: 900px;
+  width: 100%;
+  padding: 40px;
+  text-align: center;
+}
+
+.title {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  opacity: 0.85;
+  margin-bottom: 40px;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+}
+
+.role-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.role-card h3 {
+  margin-bottom: 15px;
+}
+
+.role-card button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #00c6ff;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}

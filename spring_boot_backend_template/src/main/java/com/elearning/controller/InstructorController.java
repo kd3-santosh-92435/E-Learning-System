@@ -1,16 +1,11 @@
 package com.elearning.controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.elearning.dtos.CourseRequestDTO;
 import com.elearning.dtos.CourseResponseDTO;
@@ -28,32 +23,58 @@ public class InstructorController {
 
     private final InstructorService instructorService;
 
+    // ✅ CREATE COURSE (NO instructorId)
     @PostMapping("/course")
     public ResponseEntity<CourseResponseDTO> createCourse(
-            @RequestParam Long instructorId,
-            @RequestBody CourseRequestDTO dto) {
-
+            @RequestBody CourseRequestDTO dto,
+            Principal principal
+    ) {
         return ResponseEntity.ok(
-                instructorService.createCourse(instructorId, dto)
+                instructorService.createCourse(principal.getName(), dto)
+        );
+    }
+
+    // ✅ GET MY COURSES
+    @GetMapping("/courses")
+    public ResponseEntity<List<CourseResponseDTO>> getMyCourses(
+            Principal principal
+    ) {
+        return ResponseEntity.ok(
+                instructorService.getCoursesByEmail(principal.getName())
         );
     }
 
     @PostMapping("/quiz")
     public ResponseEntity<QuizResponseDTO> createQuiz(
-            @RequestBody QuizRequestDTO dto) {
-
+            @RequestBody QuizRequestDTO dto
+    ) {
         return ResponseEntity.ok(
                 instructorService.createQuiz(dto)
         );
     }
+        
+        
+        
+        // ✅ DELETE COURSE
+        @DeleteMapping("/course/{courseId}")
+        public ResponseEntity<Void> deleteCourse(
+                @PathVariable Long courseId,
+                Principal principal
+        ) {
+            instructorService.deleteCourse(courseId, principal.getName());
+            return ResponseEntity.noContent().build();
+        }
 
-    @GetMapping("/courses/{instructorId}")
-    public ResponseEntity<List<CourseResponseDTO>> getCourses(
-            @PathVariable Long instructorId) {
-
-        return ResponseEntity.ok(
-                instructorService.getCourses(instructorId)
-        );
+        // ✅ UPDATE COURSE
+        @PutMapping("/course/{courseId}")
+        public ResponseEntity<CourseResponseDTO> updateCourse(
+                @PathVariable Long courseId,
+                @RequestBody CourseRequestDTO dto,
+                Principal principal
+        ) {
+            return ResponseEntity.ok(
+                    instructorService.updateCourse(courseId, dto, principal.getName())
+            );
+        
     }
 }
-

@@ -11,13 +11,19 @@ import com.elearning.entity.Student;
 import com.elearning.repository.CourseRepository;
 import com.elearning.repository.EnrollmentRepository;
 import com.elearning.repository.StudentRepository;
-import com.elearning.security.JwtUtil;
 import com.elearning.service.EmailService;
 import com.elearning.service.StudentService;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,8 +35,8 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
+    
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
     private final EmailService emailService;
 
     // ===============================
@@ -40,7 +46,10 @@ public class StudentServiceImpl implements StudentService {
     public StudentResponseDTO register(StudentRegisterDTO dto) {
 
         if (studentRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Email already registered"
+            );
         }
 
         Student student = Student.builder()
@@ -49,35 +58,40 @@ public class StudentServiceImpl implements StudentService {
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .build();
 
-        studentRepository.save(student);
+        Student saved = studentRepository.save(student);
 
         return StudentResponseDTO.builder()
-                .studentId(student.getStudentId())
-                .name(student.getName())
-                .email(student.getEmail())
+                .studentId(saved.getStudentId())
+                .name(saved.getName())
+                .email(saved.getEmail())
                 .build();
     }
 
     // ===============================
-    // LOGIN
+    // LOGIN (NO JWT HERE)
     // ===============================
     @Override
     public StudentResponseDTO login(LoginRequestDTO dto) {
 
         Student student = studentRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "Invalid email or password"
+                        )
+                );
 
         if (!passwordEncoder.matches(dto.getPassword(), student.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid email or password"
+            );
         }
-
-        String token = jwtUtil.generateToken(student.getEmail(), "STUDENT");
 
         return StudentResponseDTO.builder()
                 .studentId(student.getStudentId())
                 .name(student.getName())
                 .email(student.getEmail())
-                .token(token)
                 .build();
     }
 
@@ -124,11 +138,20 @@ public class StudentServiceImpl implements StudentService {
         if (enrollmentRepository
                 .existsByStudent_StudentIdAndCourse_CourseId(
                         student.getStudentId(), courseId)) {
-            return "Student already enrolled in this course";
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Already enrolled in this course"
+            );
         }
 
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Course not found"
+                        )
+                );
 
         Enrollment enrollment = Enrollment.builder()
                 .student(student)
@@ -137,17 +160,12 @@ public class StudentServiceImpl implements StudentService {
 
         enrollmentRepository.save(enrollment);
 
-        // ✅ SEND COURSE ENROLLMENT EMAIL
-        try {
-            emailService.sendCourseEnrollmentEmail(
-                    student.getEmail(),
-                    student.getName(),
-                    course.getTitle()
-            );
-        } catch (Exception e) {
-            // Email failure should NOT block enrollment
-            e.printStackTrace();
-        }
+        // ✅ SEND EMAIL
+        emailService.sendCourseEnrollmentEmail(
+                student.getEmail(),
+                student.getName(),
+                course.getTitle()
+        );
 
         return "Course enrolled successfully";
     }
@@ -176,7 +194,60 @@ public class StudentServiceImpl implements StudentService {
     }
 
     // ===============================
-    // UTILITY: GET LOGGED IN STUDENT
+    // UPDATE PROFILE
+    // ===============================
+    @Override
+    public void updateProfile(UpdateProfileDTO dto) {
+
+        Student student = getLoggedInStudent();
+
+        // Update name
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            student.setName(dto.getName());
+        }
+
+        // Update email
+        if (dto.getEmail() != null &&
+            !dto.getEmail().equals(student.getEmail())) {
+
+            if (studentRepository.findByEmail(dto.getEmail()).isPresent()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Email already in use"
+                );
+            }
+            student.setEmail(dto.getEmail());
+        }
+
+        // Change password
+        if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
+
+            if (dto.getOldPassword() == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Old password is required"
+                );
+            }
+
+            if (!passwordEncoder.matches(
+                    dto.getOldPassword(),
+                    student.getPassword())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Old password is incorrect"
+                );
+            }
+
+            student.setPassword(
+                    passwordEncoder.encode(dto.getNewPassword())
+            );
+        }
+
+        studentRepository.save(student);
+    }
+
+    // ===============================
+    // UTILITY: GET LOGGED-IN STUDENT
     // ===============================
     private Student getLoggedInStudent() {
 
@@ -186,54 +257,29 @@ public class StudentServiceImpl implements StudentService {
                 .getName();
 
         return studentRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Student not found"
+                        )
+                );
     }
     
     @Override
-    public void updateProfile(UpdateProfileDTO dto) {
+    public Long getLoggedInStudentId() {
 
-        Student student = getLoggedInStudent();
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
 
-        // ===============================
-        // UPDATE NAME
-        // ===============================
-        if (dto.getName() != null && !dto.getName().isBlank()) {
-            student.setName(dto.getName());
-        }
-
-        // ===============================
-        // UPDATE EMAIL
-        // ===============================
-        if (dto.getEmail() != null &&
-            !dto.getEmail().equals(student.getEmail())) {
-
-            if (studentRepository.findByEmail(dto.getEmail()).isPresent()) {
-                throw new RuntimeException("Email already in use");
-            }
-            student.setEmail(dto.getEmail());
-        }
-
-        // ===============================
-        // CHANGE PASSWORD (OPTIONAL)
-        // ===============================
-        if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
-
-            if (dto.getOldPassword() == null) {
-                throw new RuntimeException("Old password is required");
-            }
-
-            if (!passwordEncoder.matches(
-                    dto.getOldPassword(),
-                    student.getPassword())) {
-                throw new RuntimeException("Old password is incorrect");
-            }
-
-            student.setPassword(
-                    passwordEncoder.encode(dto.getNewPassword())
-            );
-        }
-
-        studentRepository.save(student);
+        return studentRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Student not found"
+                        ))
+                .getStudentId();
     }
 
 }

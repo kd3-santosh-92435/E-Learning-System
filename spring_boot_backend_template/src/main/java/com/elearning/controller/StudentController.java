@@ -30,7 +30,6 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getProfile());
     }
 
-    // ===============================
     // GET ALL COURSES
     // ===============================
     @GetMapping("/courses")
@@ -39,11 +38,12 @@ public class StudentController {
     }
 
     // ===============================
-    // ENROLL COURSE (JWT BASED)
+    // ✅ ENROLL COURSE (PATH VARIABLE)
     // ===============================
-    @PostMapping("/enroll")
+    // ✅ THIS IS THE ONLY ENROLL ENDPOINT
+    @PostMapping("/enroll/{courseId}")
     public ResponseEntity<String> enrollCourse(
-            @RequestParam Long courseId) {
+            @PathVariable Long courseId) {
 
         return ResponseEntity.ok(
                 studentService.enrollCourse(courseId)
@@ -51,14 +51,11 @@ public class StudentController {
     }
 
     // ===============================
-    // GET MY COURSES (JWT BASED)
+    // GET MY COURSES
     // ===============================
     @GetMapping("/my-courses")
     public ResponseEntity<List<CourseResponseDTO>> getMyCourses() {
-
-        return ResponseEntity.ok(
-                studentService.getMyCourses()
-        );
+        return ResponseEntity.ok(studentService.getMyCourses());
     }
     
     @PutMapping("/profile")

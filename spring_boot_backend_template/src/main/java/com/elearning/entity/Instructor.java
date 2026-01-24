@@ -11,7 +11,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 
@@ -23,6 +25,8 @@ import lombok.ToString;
 @Builder
 @ToString(exclude = "courses")
 @EqualsAndHashCode(exclude = "courses")
+@Getter
+@Setter
 public class Instructor {
 
     @Id
