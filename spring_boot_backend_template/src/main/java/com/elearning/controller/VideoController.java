@@ -22,18 +22,19 @@ public class VideoController {
     private final VideoService videoService;
 
     @PostMapping(
-        value = "/course/{courseId}/video",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ResponseEntity<VideoResponseDTO> uploadVideo(
-            @PathVariable Long courseId,
-            @RequestParam("title") String title,
-            @RequestParam("file") MultipartFile file
-    ) {
-        return ResponseEntity.ok(
-                videoService.uploadVideo(courseId, title, file)
-        );
-    }
+    	    value = "/course/{courseId}/video",
+    	    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    	)
+    	public ResponseEntity<VideoResponseDTO> uploadVideo(
+    	        @PathVariable Long courseId,
+    	        @RequestParam("title") String title,
+    	        @RequestParam("file") MultipartFile file
+    	) {
+    	    return ResponseEntity.ok(
+    	            videoService.uploadVideo(courseId, title, file)
+    	    );
+    	}
+
 
     @GetMapping("/course/{courseId}/videos")
     public ResponseEntity<List<VideoResponseDTO>> getVideos(

@@ -1,0 +1,57 @@
+/* ================= STUDENT NAVBAR ================= */
+
+.student-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: #1c1d1f;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.student-navbar h2 {
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #a435f0;
+}
+
+.student-navbar nav {
+  display: flex;
+  gap: 15px;
+}
+
+.student-navbar button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.student-navbar button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.student-navbar .logout {
+  background: #e74c3c;
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+.student-navbar .logout:hover {
+  background: #c0392b;
+}
+
+/* ================= CONTENT ================= */
+
+.student-content {
+  padding: 30px;
+  min-height: calc(100vh - 70px);
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+}

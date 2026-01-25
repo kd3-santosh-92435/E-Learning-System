@@ -13,6 +13,8 @@ export const getMyCoursesApi = () =>
   api.get("/student/my-courses");
 
 /* 🔥 COURSE VIDEOS */
+
 export const getCourseVideosApi = (courseId) =>
-  api.get(`/student/videos/course/${courseId}`);
+  api.get(`/student/video/course/${courseId}`);
+
 

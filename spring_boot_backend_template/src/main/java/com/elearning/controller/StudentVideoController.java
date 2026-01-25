@@ -34,12 +34,13 @@ public class StudentVideoController {
     // ===============================
     @GetMapping("/course/{courseId}")
     public ResponseEntity<List<VideoResponseDTO>> getCourseVideos(
-            @PathVariable Long courseId) {
-
+            @PathVariable Long courseId
+    ) {
         return ResponseEntity.ok(
                 studentVideoService.getVideosForStudent(courseId)
         );
     }
+
 
     // ===============================
     // STREAM VIDEO
@@ -80,27 +81,12 @@ public class StudentVideoController {
 
         Video video = videoService.getVideo(videoId);
 
-        Long studentId = enrollmentService.getLoggedInStudentId();
-        enrollmentService.validateEnrollment(
-                studentId,
-                video.getCourse().getCourseId()
-        );
-
-        File file = new File(video.getFilePath());
-
-        if (!file.exists()) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Video file missing on server"
-            );
-        }
-
-        FileSystemResource resource = new FileSystemResource(file);
+        FileSystemResource resource =
+                new FileSystemResource(video.getFilePath());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "video/mp4")
                 .header(HttpHeaders.ACCEPT_RANGES, "bytes")
-                .contentLength(file.length())
                 .body(resource);
     }
 

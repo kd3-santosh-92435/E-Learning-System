@@ -62,9 +62,10 @@ public class VideoServiceImpl implements VideoService {
             Video video = Video.builder()
                     .title(title)
                     .filePath(targetPath.toString()) // absolute path
-                    .duration(0)
                     .course(course)
+                    .duration(0)
                     .build();
+
 
 
             Video saved = videoRepository.save(video);

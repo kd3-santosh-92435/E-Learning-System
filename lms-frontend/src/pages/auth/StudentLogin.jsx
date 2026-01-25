@@ -1,62 +1,67 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { jwtDecode } from "jwt-decode";
-
-import "../../styles/auth.css";
-import { studentLoginApi } from "../../features/auth/authApi";
-import { loginSuccess } from "../../features/auth/authSlice";
+import api from "../../services/api";
+import "./Auth.css";
 
 const StudentLogin = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+
+    if (!email || !password) {
+      toast.error("All fields required");
+      return;
+    }
+
     try {
-      const res = await studentLoginApi({ email, password });
-      const decoded = jwtDecode(res.data.token);
+      const res = await api.post("/auth/student/login", {
+        email,
+        password,
+      });
 
-      dispatch(
-        loginSuccess({
-          token: res.data.token,
-          user: { email: decoded.sub, role: "STUDENT" },
-        })
-      );
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("role", "STUDENT");
 
-      toast.success("Student login successful");
-      navigate("/student/dashboard", { replace: true });
+      toast.success("Login successful");
+      navigate("/student/dashboard");
     } catch {
-      toast.error("Invalid email or password");
+      toast.error("Invalid credentials");
     }
   };
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
+      <form className="auth-card" onSubmit={submit}>
         <h2>Student Login</h2>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            placeholder="Email"
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-          <button>Login</button>
-        </form>
-      </div>
+        <button>Login</button>
+
+        <div className="auth-links">
+          <Link to="/forgot-password">Forgot password?</Link>
+          <br />
+          <Link to="/student/register">
+            New here? Register
+          </Link>
+        </div>
+      </form>
     </div>
   );
 };

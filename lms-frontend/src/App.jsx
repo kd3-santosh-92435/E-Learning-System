@@ -12,11 +12,14 @@ import StudentRegister from "./pages/auth/StudentRegister";
 import InstructorLogin from "./pages/auth/InstructorLogin";
 import InstructorRegister from "./pages/auth/InstructorRegister";
 import AdminLogin from "./pages/auth/AdminLogin";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 /* ========= STUDENT ========= */
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentMyCourses from "./pages/student/StudentMyCourses";
 import StudentCourseVideos from "./pages/student/StudentCourseVideos";
+import StudentLayout from "./layouts/StudentLayout";
 
 /* ========= INSTRUCTOR ========= */
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
@@ -34,12 +37,12 @@ function App() {
   return (
     <Routes>
 
-      {/* ---------- PUBLIC ---------- */}
+      {/* ================= PUBLIC ================= */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
 
-      {/* ---------- AUTH ---------- */}
+      {/* ================= AUTH ================= */}
       <Route path="/student/login" element={<StudentLogin />} />
       <Route path="/student/register" element={<StudentRegister />} />
 
@@ -48,35 +51,27 @@ function App() {
 
       <Route path="/admin/login" element={<AdminLogin />} />
 
-      {/* ---------- STUDENT ---------- */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* ================= STUDENT ================= */}
       <Route
-        path="/student/dashboard"
+        path="/student"
         element={
           <ProtectedRoute role="STUDENT">
-            <StudentDashboard />
+            <StudentLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="dashboard" element={<StudentDashboard />} />
+        <Route path="my-courses" element={<StudentMyCourses />} />
+        <Route
+          path="course/:courseId/videos"
+          element={<StudentCourseVideos />}
+        />
+      </Route>
 
-      <Route
-        path="/student/my-courses"
-        element={
-          <ProtectedRoute role="STUDENT">
-            <StudentMyCourses />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/student/course/:courseId/videos"
-        element={
-          <ProtectedRoute role="STUDENT">
-            <StudentCourseVideos />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* ---------- INSTRUCTOR ---------- */}
+      {/* ================= INSTRUCTOR ================= */}
       <Route
         path="/instructor"
         element={
@@ -93,7 +88,7 @@ function App() {
         />
       </Route>
 
-      {/* ---------- ADMIN ---------- */}
+      {/* ================= ADMIN ================= */}
       <Route
         path="/admin/dashboard"
         element={

@@ -25,3 +25,10 @@ export const instructorLoginApi = (data) => {
 export const adminLoginApi = (data) => {
   return api.post("/auth/admin/login", data);
 };
+
+
+export const forgotPasswordApi = (email) =>
+  api.post("/auth/forgot-password", { email });
+
+export const resetPasswordApi = (data) =>
+  api.post("/auth/reset-password", data);

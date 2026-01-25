@@ -8,7 +8,7 @@ import {
   deleteVideoApi,
 } from "../../features/instructor/instructorApi";
 
-import "./InstructorCourses.css";
+import "./InstructorCourseVideos.css";
 
 const InstructorCourseVideos = () => {
   const { courseId } = useParams();
@@ -23,7 +23,7 @@ const InstructorCourseVideos = () => {
     try {
       const res = await getVideosByCourseApi(courseId);
       setVideos(res.data);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load videos");
     }
   };
@@ -37,7 +37,7 @@ const InstructorCourseVideos = () => {
     e.preventDefault();
 
     if (!title || !file) {
-      toast.error("Title and file required");
+      toast.error("Title and video file required");
       return;
     }
 
@@ -51,8 +51,7 @@ const InstructorCourseVideos = () => {
       document.getElementById("videoFile").value = "";
 
       loadVideos();
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Upload failed");
     } finally {
       setLoading(false);
@@ -73,63 +72,68 @@ const InstructorCourseVideos = () => {
   };
 
   return (
-    <div className="instructor-courses-page">
-      <h1 className="page-title">🎬 Manage Videos</h1>
+    <div className="instructor-video-page">
+      <h1 className="page-title">🎬 Course Content</h1>
 
-      {/* ================= UPLOAD FORM ================= */}
-      <form onSubmit={uploadVideo} className="glass p-3 mb-4">
-        <input
-          className="form-control mb-2"
-          placeholder="Video title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+      {/* ================= UPLOAD CARD ================= */}
+      <div className="upload-card">
+        <h3>Upload New Video</h3>
 
-        <input
-          id="videoFile"
-          type="file"
-          className="form-control mb-2"
-          accept="video/*"
-          onChange={(e) => setFile(e.target.files[0])}
-        />
+        <form onSubmit={uploadVideo}>
+          <input
+            type="text"
+            placeholder="Lecture title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
 
-        <button
-          className="btn btn-gradient w-100"
-          disabled={loading}
-        >
-          {loading ? "Uploading..." : "Upload Video"}
-        </button>
-      </form>
+          <input
+            id="videoFile"
+            type="file"
+            accept="video/*"
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+
+          <button disabled={loading}>
+            {loading ? "Uploading..." : "Upload Lecture"}
+          </button>
+        </form>
+      </div>
 
       {/* ================= VIDEO LIST ================= */}
+      <h2 className="section-title">Course Lectures</h2>
+
       {videos.length === 0 ? (
-        <p style={{ color: "white" }}>No videos uploaded</p>
+        <p className="empty-text">No videos uploaded yet</p>
       ) : (
-        <table className="video-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>File</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {videos.map((v) => (
-              <tr key={v.videoId}>
-                <td>{v.title}</td>
-                <td className="truncate">{v.filePath}</td>
-                <td>
+        <div className="video-grid">
+          {videos.map((v, index) => (
+            <div className="video-card" key={v.videoId}>
+              <div className="video-thumb">
+                🎥
+              </div>
+
+              <div className="video-info">
+                <h4>
+                  {index + 1}. {v.title}
+                </h4>
+
+                <p className="file-path">
+                  {v.filePath.split("\\").pop()}
+                </p>
+
+                <div className="actions">
                   <button
-                    className="delete"
+                    className="delete-btn"
                     onClick={() => deleteVideo(v.videoId)}
                   >
                     Delete
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
